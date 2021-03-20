@@ -164,8 +164,8 @@ gcloud beta compute vpn-tunnels delete ha-vpn-vpc2-tunnel1 --region $GCP_REGION
 gcloud compute vpn-gateways delete ha-vpn-gw-01 --region=$GCP_REGION
 gcloud compute vpn-gateways delete ha-vpn-gw-02 --region=$GCP_REGION
 
-gcloud compute routers create ha-vpn-vpc-crt-01    --region=$GCP_REGION
-gcloud compute routers create ha-vpn-vpc-crt-02    --region=$GCP_REGION
+gcloud compute routers delete ha-vpn-vpc-crt-01    --region=$GCP_REGION
+gcloud compute routers delete ha-vpn-vpc-crt-02    --region=$GCP_REGION
 
 gcloud beta compute networks subnets delete vpc-01-subnet-1 --region=$GCP_REGION
 gcloud beta compute networks subnets delete vpc-02-subnet-1 --region=$GCP_REGION
