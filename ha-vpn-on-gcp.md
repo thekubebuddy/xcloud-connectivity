@@ -14,10 +14,10 @@ gcloud compute networks create ha-vpn-vpc-2 --subnet-mode custom
 export GCP_REGION=us-central1
 
 # subnets creation
-gcloud beta compute networks subnets create vpc-demo-subnet1 \
+gcloud beta compute networks subnets create vpc-01-subnet-1 \
 --network ha-vpn-vpc-1 --range 10.1.1.0/24 --region $GCP_REGION
 
-gcloud beta compute networks subnets create vpc-demo-subnet1 \
+gcloud beta compute networks subnets create vpc-02-subnet-1 \
 --network ha-vpn-vpc-2 --range 10.2.1.0/24 --region $GCP_REGION
 ```
 
@@ -121,15 +121,15 @@ gcloud compute firewall-rules create ha-vpn-vpc-2-allow-access-from-ha-vpn-vpc-1
 
 #### Creating the IAP rule for the 2 VPCs to take the SSH access with IAP
 ```
-gcloud compute firewall-rules create vpc-01-allow-iap-access-fw \
-    --network vpc-01 \
-    --allow 22 \
+gcloud compute firewall-rules create ha-vpn-vpc-1-allow-iap-access-fw \
+    --network ha-vpn-vpc-1 \
+    --allow tcp:22 \
     --source-ranges 35.235.240.0/20 \
     --target-tags allow-iap-access
 
-gcloud compute firewall-rules create vpc-02-allow-iap-access-fw \
-    --network vpc-02 \
-    --allow 22 \
+gcloud compute firewall-rules create ha-vpn-vpc-2-allow-iap-access-fw \
+    --network ha-vpn-vpc-2 \
+    --allow tcp:22 \
     --source-ranges 35.235.240.0/20 \
     --target-tags allow-iap-access
 ```
@@ -144,5 +144,38 @@ gcloud compute instances create ha-vpn-vpc-2-instance1 --zone $GCP_REGION-a --su
 ```
 
 #### Cleanup
+```
+export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+export GCP_REGION=us-central1
 
-Pending...
+gcloud compute instances delete ha-vpn-vpc-1-instance1 --zone $GCP_REGION-a 
+gcloud compute instances delete ha-vpn-vpc-2-instance1 --zone $GCP_REGION-a 
+
+gcloud compute firewall-rules delete ha-vpn-vpc-1-allow-iap-access-fw
+gcloud compute firewall-rules delete ha-vpn-vpc-2-allow-iap-access-fw
+gcloud compute firewall-rules delete ha-vpn-vpc-1-allow-access-from-ha-vpn-vpc-2-fw
+gcloud compute firewall-rules delete ha-vpn-vpc-2-allow-access-from-ha-vpn-vpc-1-fw
+
+gcloud beta compute vpn-tunnels delete ha-vpn-vpc1-tunnel0 --region $GCP_REGION
+gcloud beta compute vpn-tunnels delete ha-vpn-vpc1-tunnel1 --region $GCP_REGION
+gcloud beta compute vpn-tunnels delete ha-vpn-vpc2-tunnel0 --region $GCP_REGION
+gcloud beta compute vpn-tunnels delete ha-vpn-vpc2-tunnel1 --region $GCP_REGION
+
+gcloud compute vpn-gateways delete ha-vpn-gw-01 --region=$GCP_REGION
+gcloud compute vpn-gateways delete ha-vpn-gw-02 --region=$GCP_REGION
+
+gcloud compute routers create ha-vpn-vpc-crt-01    --region=$GCP_REGION
+gcloud compute routers create ha-vpn-vpc-crt-02    --region=$GCP_REGION
+
+gcloud beta compute networks subnets delete vpc-01-subnet-1 --region=$GCP_REGION
+gcloud beta compute networks subnets delete vpc-02-subnet-1 --region=$GCP_REGION
+
+gcloud beta compute networks delete ha-vpn-vpc-1 
+gcloud beta compute networks delete ha-vpn-vpc-1 
+```
+
+
+References:
+
+https://cloud.google.com/sdk/gcloud/reference/config/set
+
